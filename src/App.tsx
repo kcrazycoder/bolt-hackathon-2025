@@ -3,6 +3,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { LandingPage } from '@/components/LandingPage'
 import { AuthPage } from '@/components/AuthPage'
 import { SkillsPage } from '@/components/SkillsPage'
+import { AssessmentResultsPage } from '@/components/AssessmentResultsPage'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 
@@ -18,6 +19,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SkillsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/assessment-results" 
+            element={
+              <ProtectedRoute>
+                <AssessmentResultsPage />
               </ProtectedRoute>
             } 
           />

@@ -35,6 +35,32 @@ export type Database = {
           updated_at?: string
         }
       }
+      assessments: {
+        Row: {
+          id: string
+          user_id: string
+          skill_assessed: string
+          score: number
+          feedback_text: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          skill_assessed: string
+          score: number
+          feedback_text: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          skill_assessed?: string
+          score?: number
+          feedback_text?: string
+          created_at?: string
+        }
+      }
     }
   }
 }
