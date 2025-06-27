@@ -75,4 +75,5 @@ export const LandingPage = () => {
       </div>
     </div>
   )
+  )
 }
