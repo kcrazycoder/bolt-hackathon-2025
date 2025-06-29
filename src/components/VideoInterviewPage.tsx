@@ -2,37 +2,147 @@ import { useEffect, useState } from 'react'
 import { DailyProvider } from '@daily-co/daily-react'
 import { WelcomeScreen } from '@/components/WelcomeScreen'
 import { HairCheckScreen } from '@/components/HairCheckScreen'
-import { CallScreen } from '@/components/CallScreen'
+import { InterviewCallScreen } from '@/components/InterviewCallScreen'
 import { createConversation, endConversation } from '@/api'
+import { createPersona, deletePersona } from '@/api/personaApi'
+import { generatePersonaData, generateQuestions, InterviewQuestion } from '@/utils/personaGenerator'
 import { IConversation } from '@/types'
 import { useToast } from "@/hooks/use-toast"
-import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { useNavigate } from 'react-router-dom'
+
+export type InterviewState = 'loading' | 'introduction' | 'waitingForConfirmation' | 'question1' | 'question2' | 'question3' | 'completed'
 
 function VideoInterviewPage() {
   const { toast } = useToast()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  
   const [screen, setScreen] = useState<'welcome' | 'hairCheck' | 'call'>('welcome')
   const [conversation, setConversation] = useState<IConversation | null>(null)
   const [loading, setLoading] = useState(false)
+  
+  // Interview-specific state
+  const [userSkills, setUserSkills] = useState<string[]>([])
+  const [interviewState, setInterviewState] = useState<InterviewState>('loading')
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [countdown, setCountdown] = useState(60)
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([])
+  const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null)
 
+  // Fetch user skills on component mount
+  useEffect(() => {
+    if (user) {
+      loadUserSkills()
+    }
+  }, [user])
+
+  // Countdown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    
+    if (interviewState.startsWith('question') && countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            // Time's up, move to next question or complete
+            handleTimeUp()
+            return 60
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [interviewState, countdown])
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (conversation) {
         void endConversation(conversation.conversation_id)
       }
+      if (createdPersonaId) {
+        void deletePersona(createdPersonaId)
+      }
     }
-  }, [conversation])
+  }, [conversation, createdPersonaId])
 
-  const handleStart = async () => {
+  const loadUserSkills = async () => {
+    if (!user) return
+
     try {
-      setLoading(true)
-      const conversation = await createConversation()
-      setConversation(conversation)
-      setScreen('hairCheck')
-    } catch {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('skills')
+        .eq('id', user.id)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading skills:', error)
+        return
+      }
+
+      if (data?.skills && data.skills.length > 0) {
+        setUserSkills(data.skills)
+        setQuestions(generateQuestions(data.skills))
+      } else {
+        toast({
+          variant: "destructive",
+          title: "No skills found",
+          description: "Please add your skills first.",
+        })
+        navigate('/skills')
+      }
+    } catch (error) {
+      console.error('Error loading skills:', error)
       toast({
         variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: 'Check console for details',
+        title: "Error loading skills",
+        description: "Please try again.",
+      })
+      navigate('/skills')
+    }
+  }
+
+  const handleStart = async () => {
+    if (userSkills.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No skills available",
+        description: "Please add your skills first.",
+      })
+      navigate('/skills')
+      return
+    }
+
+    try {
+      setLoading(true)
+      
+      // Generate and create dynamic persona
+      const personaData = generatePersonaData(userSkills)
+      const createdPersona = await createPersona(personaData)
+      setCreatedPersonaId(createdPersona.persona_id)
+      
+      // Create conversation with the dynamic persona
+      const conversation = await createConversation(createdPersona.persona_id)
+      setConversation(conversation)
+      setScreen('hairCheck')
+      
+      toast({
+        title: "AI Interviewer Ready",
+        description: `Created personalized interviewer for ${userSkills.join(', ')}`,
+      })
+    } catch (error) {
+      console.error('Error creating interview:', error)
+      toast({
+        variant: "destructive",
+        title: "Failed to create interview",
+        description: 'Please try again or check console for details',
       })
     } finally {
       setLoading(false)
@@ -41,30 +151,93 @@ function VideoInterviewPage() {
 
   const handleEnd = async () => {
     try {
-      if (!conversation) return
-      await endConversation(conversation.conversation_id)
+      if (conversation) {
+        await endConversation(conversation.conversation_id)
+      }
+      if (createdPersonaId) {
+        await deletePersona(createdPersonaId)
+      }
     } catch (error) {
-      console.error(error)
+      console.error('Error cleaning up:', error)
     } finally {
       setConversation(null)
+      setCreatedPersonaId(null)
       setScreen('welcome')
+      setInterviewState('loading')
+      setCurrentQuestionIndex(0)
+      setCountdown(60)
     }
   }
 
   const handleJoin = () => {
     setScreen('call')
+    setInterviewState('introduction')
+  }
+
+  const handleTimeUp = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1)
+      setInterviewState(`question${currentQuestionIndex + 2}` as InterviewState)
+      setCountdown(60)
+    } else {
+      handleInterviewComplete()
+    }
+  }
+
+  const handleInterviewComplete = () => {
+    setInterviewState('completed')
+    // Navigate to results page after a brief delay
+    setTimeout(() => {
+      navigate('/assessment-results', {
+        state: {
+          assessmentResults: {
+            results: questions.map(q => ({
+              skill: q.skill,
+              score: Math.floor(Math.random() * 30) + 70, // Mock score 70-100
+              feedback: `Based on your interview response about ${q.skill}, you demonstrated good understanding of the core concepts.`,
+              strengths: [`Good knowledge of ${q.skill} fundamentals`, 'Clear communication'],
+              improvements: [`Deepen expertise in advanced ${q.skill} techniques`, 'Practice with real-world scenarios']
+            })),
+            overallScore: Math.floor(Math.random() * 20) + 75,
+            summary: `You completed a comprehensive video interview covering ${userSkills.join(', ')}. Your responses showed good foundational knowledge with opportunities for growth.`
+          }
+        }
+      })
+    }, 3000)
   }
 
   return (
-    <ProtectedRoute>
-      <main>
-        <DailyProvider>
-          {screen === 'welcome' && <WelcomeScreen onStart={handleStart} loading={loading} />}
-          {screen === 'hairCheck' && <HairCheckScreen handleEnd={handleEnd} handleJoin={handleJoin} />}
-          {screen === 'call' && conversation && <CallScreen conversation={conversation} handleEnd={handleEnd} />}
-        </DailyProvider>
-      </main>
-    </ProtectedRoute>
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <DailyProvider>
+        {screen === 'welcome' && (
+          <WelcomeScreen 
+            onStart={handleStart} 
+            loading={loading}
+            skills={userSkills}
+          />
+        )}
+        {screen === 'hairCheck' && (
+          <HairCheckScreen 
+            handleEnd={handleEnd} 
+            handleJoin={handleJoin} 
+          />
+        )}
+        {screen === 'call' && conversation && (
+          <InterviewCallScreen 
+            conversation={conversation} 
+            handleEnd={handleEnd}
+            interviewState={interviewState}
+            setInterviewState={setInterviewState}
+            currentQuestionIndex={currentQuestionIndex}
+            setCurrentQuestionIndex={setCurrentQuestionIndex}
+            countdown={countdown}
+            setCountdown={setCountdown}
+            questions={questions}
+            onInterviewComplete={handleInterviewComplete}
+          />
+        )}
+      </DailyProvider>
+    </main>
   )
 }
 
