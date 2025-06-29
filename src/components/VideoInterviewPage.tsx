@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { DailyProvider } from '@daily-co/daily-react'
 import { WelcomeScreen } from '@/components/WelcomeScreen'
 import { HairCheckScreen } from '@/components/HairCheckScreen'
 import { InterviewCallScreen } from '@/components/InterviewCallScreen'
@@ -234,36 +233,34 @@ function VideoInterviewPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <DailyProvider>
-        {screen === 'welcome' && (
-          <WelcomeScreen 
-            onStart={handleStart} 
-            loading={loading}
-            skills={userSkills}
-          />
-        )}
-        {screen === 'hairCheck' && (
-          <HairCheckScreen 
-            handleEnd={handleEnd} 
-            handleJoin={handleJoin} 
-          />
-        )}
-        {screen === 'call' && conversation && (
-          <InterviewCallScreen 
-            conversation={conversation} 
-            handleEnd={handleEnd}
-            interviewState={interviewState}
-            setInterviewState={setInterviewState}
-            currentQuestionIndex={currentQuestionIndex}
-            setCurrentQuestionIndex={setCurrentQuestionIndex}
-            countdown={countdown}
-            setCountdown={setCountdown}
-            finalCountdown={finalCountdown}
-            questions={questions}
-            onInterviewComplete={handleInterviewComplete}
-          />
-        )}
-      </DailyProvider>
+      {screen === 'welcome' && (
+        <WelcomeScreen 
+          onStart={handleStart} 
+          loading={loading}
+          skills={userSkills}
+        />
+      )}
+      {screen === 'hairCheck' && (
+        <HairCheckScreen 
+          handleEnd={handleEnd} 
+          handleJoin={handleJoin} 
+        />
+      )}
+      {screen === 'call' && conversation && (
+        <InterviewCallScreen 
+          conversation={conversation} 
+          handleEnd={handleEnd}
+          interviewState={interviewState}
+          setInterviewState={setInterviewState}
+          currentQuestionIndex={currentQuestionIndex}
+          setCurrentQuestionIndex={setCurrentQuestionIndex}
+          countdown={countdown}
+          setCountdown={setCountdown}
+          finalCountdown={finalCountdown}
+          questions={questions}
+          onInterviewComplete={handleInterviewComplete}
+        />
+      )}
     </main>
   )
 }
