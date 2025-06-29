@@ -93,7 +93,7 @@ The interface provides visual cues (timers, progress indicators, buttons) that y
         stt_engine: 'tavus-turbo',
         participant_pause_sensitivity: 'medium',
         participant_interrupt_sensitivity: 'low',
-        smart_turn_detection: true
+        smart_turn_detection: false
       }
     }
   };
