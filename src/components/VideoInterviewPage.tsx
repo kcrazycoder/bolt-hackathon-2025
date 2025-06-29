@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import { TAVUS_API_KEY } from '@/config'
 
 export type InterviewState = 'loading' | 'introduction' | 'waitingForConfirmation' | 'question1' | 'question2' | 'question3' | 'finalCountdown' | 'completed'
 
@@ -132,6 +133,16 @@ function VideoInterviewPage() {
   }
 
   const handleStart = async () => {
+    // Check if API key is configured
+    if (!TAVUS_API_KEY) {
+      toast({
+        variant: "destructive",
+        title: "API Configuration Error",
+        description: "Tavus API key is not configured. Please check your environment variables.",
+      })
+      return
+    }
+
     if (userSkills.length === 0) {
       toast({
         variant: "destructive",
@@ -161,11 +172,35 @@ function VideoInterviewPage() {
       })
     } catch (error) {
       console.error('Error creating interview:', error)
-      toast({
-        variant: "destructive",
-        title: "Failed to create interview",
-        description: 'Please try again or check console for details',
-      })
+      
+      // Provide more specific error messaging
+      if (error instanceof Error) {
+        if (error.message.includes('401')) {
+          toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "Invalid Tavus API key. Please check your API key configuration.",
+          })
+        } else if (error.message.includes('400')) {
+          toast({
+            variant: "destructive",
+            title: "API Request Error",
+            description: "Invalid request to Tavus API. Please check your API key and try again.",
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Failed to create interview",
+            description: error.message || 'Please try again or check console for details',
+          })
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to create interview",
+          description: 'Please try again or check console for details',
+        })
+      }
     } finally {
       setLoading(false)
     }
