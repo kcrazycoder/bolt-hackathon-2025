@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 
-export type InterviewState = 'loading' | 'introduction' | 'waitingForConfirmation' | 'question1' | 'question2' | 'question3' | 'completed'
+export type InterviewState = 'loading' | 'introduction' | 'waitingForConfirmation' | 'question1' | 'question2' | 'question3' | 'finalCountdown' | 'completed'
 
 function VideoInterviewPage() {
   const { toast } = useToast()
@@ -28,6 +28,7 @@ function VideoInterviewPage() {
   const [interviewState, setInterviewState] = useState<InterviewState>('loading')
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [countdown, setCountdown] = useState(60)
+  const [finalCountdown, setFinalCountdown] = useState(3)
   const [questions, setQuestions] = useState<InterviewQuestion[]>([])
   const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null)
 
@@ -59,6 +60,28 @@ function VideoInterviewPage() {
       if (interval) clearInterval(interval)
     }
   }, [interviewState, countdown])
+
+  // Final countdown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    
+    if (interviewState === 'finalCountdown' && finalCountdown > 0) {
+      interval = setInterval(() => {
+        setFinalCountdown(prev => {
+          if (prev <= 1) {
+            // Navigate to results after countdown
+            navigateToResults()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [interviewState, finalCountdown])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -166,6 +189,7 @@ function VideoInterviewPage() {
       setInterviewState('loading')
       setCurrentQuestionIndex(0)
       setCountdown(60)
+      setFinalCountdown(3)
     }
   }
 
@@ -185,25 +209,27 @@ function VideoInterviewPage() {
   }
 
   const handleInterviewComplete = () => {
+    setInterviewState('finalCountdown')
+    setFinalCountdown(3)
+  }
+
+  const navigateToResults = () => {
     setInterviewState('completed')
-    // Navigate to results page after a brief delay
-    setTimeout(() => {
-      navigate('/assessment-results', {
-        state: {
-          assessmentResults: {
-            results: questions.map(q => ({
-              skill: q.skill,
-              score: Math.floor(Math.random() * 30) + 70, // Mock score 70-100
-              feedback: `Based on your interview response about ${q.skill}, you demonstrated good understanding of the core concepts.`,
-              strengths: [`Good knowledge of ${q.skill} fundamentals`, 'Clear communication'],
-              improvements: [`Deepen expertise in advanced ${q.skill} techniques`, 'Practice with real-world scenarios']
-            })),
-            overallScore: Math.floor(Math.random() * 20) + 75,
-            summary: `You completed a comprehensive video interview covering ${userSkills.join(', ')}. Your responses showed good foundational knowledge with opportunities for growth.`
-          }
+    navigate('/assessment-results', {
+      state: {
+        assessmentResults: {
+          results: questions.map(q => ({
+            skill: q.skill,
+            score: Math.floor(Math.random() * 30) + 70, // Mock score 70-100
+            feedback: `Based on your interview response about ${q.skill}, you demonstrated good understanding of the core concepts.`,
+            strengths: [`Good knowledge of ${q.skill} fundamentals`, 'Clear communication'],
+            improvements: [`Deepen expertise in advanced ${q.skill} techniques`, 'Practice with real-world scenarios']
+          })),
+          overallScore: Math.floor(Math.random() * 20) + 75,
+          summary: `You completed a comprehensive video interview covering ${userSkills.join(', ')}. Your responses showed good foundational knowledge with opportunities for growth.`
         }
-      })
-    }, 3000)
+      }
+    })
   }
 
   return (
@@ -232,6 +258,7 @@ function VideoInterviewPage() {
             setCurrentQuestionIndex={setCurrentQuestionIndex}
             countdown={countdown}
             setCountdown={setCountdown}
+            finalCountdown={finalCountdown}
             questions={questions}
             onInterviewComplete={handleInterviewComplete}
           />

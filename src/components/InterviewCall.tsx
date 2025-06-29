@@ -13,6 +13,7 @@ interface InterviewCallProps {
   setCurrentQuestionIndex: (index: number) => void
   countdown: number
   setCountdown: (countdown: number) => void
+  finalCountdown: number
   questions: InterviewQuestion[]
   onInterviewComplete: () => void
 }
@@ -24,6 +25,7 @@ export const InterviewCall = ({
   setCurrentQuestionIndex,
   countdown,
   setCountdown,
+  finalCountdown,
   questions,
   onInterviewComplete
 }: InterviewCallProps) => {
@@ -151,11 +153,22 @@ export const InterviewCall = ({
                   </div>
                 </div>
               )}
+
+              {interviewState === 'finalCountdown' && (
+                <div className="text-sm text-center">
+                  <div className="font-medium text-yellow-400">🏁 Interview Complete</div>
+                  <div className="text-white/70 mt-1">Preparing your results...</div>
+                  <div className="text-2xl font-bold text-yellow-400 mt-2">
+                    {finalCountdown}
+                  </div>
+                  <div className="text-xs text-white/50">seconds remaining</div>
+                </div>
+              )}
               
               {interviewState === 'completed' && (
                 <div className="text-sm">
-                  <div className="font-medium">✅ Interview Complete</div>
-                  <div className="text-white/70">Preparing your results...</div>
+                  <div className="font-medium">✅ Redirecting to Results</div>
+                  <div className="text-white/70">Please wait...</div>
                 </div>
               )}
             </div>

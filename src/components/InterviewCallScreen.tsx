@@ -6,7 +6,7 @@ import { InterviewCall } from '@/components/InterviewCall.tsx'
 import { InterviewState, InterviewQuestion } from '@/utils/personaGenerator'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Clock, MessageCircle, CheckCircle } from 'lucide-react'
+import { Clock, MessageCircle, CheckCircle, Timer } from 'lucide-react'
 
 interface InterviewCallScreenProps {
   conversation: IConversation
@@ -17,6 +17,7 @@ interface InterviewCallScreenProps {
   setCurrentQuestionIndex: (index: number) => void
   countdown: number
   setCountdown: (countdown: number) => void
+  finalCountdown: number
   questions: InterviewQuestion[]
   onInterviewComplete: () => void
 }
@@ -30,6 +31,7 @@ export const InterviewCallScreen = ({
   setCurrentQuestionIndex,
   countdown,
   setCountdown,
+  finalCountdown,
   questions,
   onInterviewComplete
 }: InterviewCallScreenProps) => {
@@ -61,6 +63,8 @@ export const InterviewCallScreen = ({
       case 'question2':
       case 'question3':
         return { text: `Question ${currentQuestionIndex + 1}`, color: 'bg-purple-500' }
+      case 'finalCountdown':
+        return { text: 'Interview Concluding', color: 'bg-orange-500' }
       case 'completed':
         return { text: 'Interview Complete', color: 'bg-green-500' }
       default:
@@ -104,6 +108,20 @@ export const InterviewCallScreen = ({
                   </div>
                 </div>
               )}
+
+              {interviewState === 'finalCountdown' && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-orange-400">
+                    <Timer className="w-5 h-5" />
+                    <span className="text-2xl font-mono font-bold">
+                      {finalCountdown}
+                    </span>
+                  </div>
+                  <div className="text-white/60 text-sm">
+                    Preparing results...
+                  </div>
+                </div>
+              )}
               
               {interviewState === 'completed' && (
                 <div className="flex items-center gap-2 text-green-400">
@@ -124,6 +142,7 @@ export const InterviewCallScreen = ({
             setCurrentQuestionIndex={setCurrentQuestionIndex}
             countdown={countdown}
             setCountdown={setCountdown}
+            finalCountdown={finalCountdown}
             questions={questions}
             onInterviewComplete={onInterviewComplete}
           />
