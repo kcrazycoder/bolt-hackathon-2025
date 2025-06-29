@@ -31,12 +31,18 @@ export const InterviewCall = ({
   const localSessionId = useLocalSessionId()
   const [mode, setMode] = useState<'full' | 'minimal'>('full')
 
-  // Get speaking states for visual indicators
-  const localIsSpeaking = useParticipantProperty(localSessionId, 'audio') && 
-                          !useParticipantProperty(localSessionId, 'audioTrack')?.isOff
-  const remoteIsSpeaking = remoteParticipantIds.length > 0 && 
-                          useParticipantProperty(remoteParticipantIds[0], 'audio') && 
-                          !useParticipantProperty(remoteParticipantIds[0], 'audioTrack')?.isOff
+  // Always call hooks unconditionally - apply conditional logic to the results
+  const localAudio = useParticipantProperty(localSessionId, 'audio')
+  const localAudioTrack = useParticipantProperty(localSessionId, 'audioTrack')
+  
+  // For remote participant, use the first one if available, otherwise use null
+  const remoteParticipantId = remoteParticipantIds.length > 0 ? remoteParticipantIds[0] : null
+  const remoteAudio = useParticipantProperty(remoteParticipantId, 'audio')
+  const remoteAudioTrack = useParticipantProperty(remoteParticipantId, 'audioTrack')
+
+  // Now apply conditional logic to the hook results
+  const localIsSpeaking = localAudio && !localAudioTrack?.isOff
+  const remoteIsSpeaking = remoteParticipantId && remoteAudio && !remoteAudioTrack?.isOff
 
   // Handle interview state transitions
   useEffect(() => {
