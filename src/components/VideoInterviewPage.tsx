@@ -8,7 +8,7 @@ import { IConversation } from '@/types'
 import { useToast } from "@/hooks/use-toast"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 
-function App() {
+function VideoInterviewPage() {
   const { toast } = useToast()
   const [screen, setScreen] = useState<'welcome' | 'hairCheck' | 'call'>('welcome')
   const [conversation, setConversation] = useState<IConversation | null>(null)
@@ -57,16 +57,15 @@ function App() {
 
   return (
     <ProtectedRoute>
-
-    <main>
-      <DailyProvider>
-        {screen === 'welcome' && <WelcomeScreen onStart={handleStart} loading={loading} />}
-        {screen === 'hairCheck' && <HairCheckScreen handleEnd={handleEnd} handleJoin={handleJoin} />}
-        {screen === 'call' && conversation && <CallScreen conversation={conversation} handleEnd={handleEnd} />}
-      </DailyProvider>
-    </main>
+      <main>
+        <DailyProvider>
+          {screen === 'welcome' && <WelcomeScreen onStart={handleStart} loading={loading} />}
+          {screen === 'hairCheck' && <HairCheckScreen handleEnd={handleEnd} handleJoin={handleJoin} />}
+          {screen === 'call' && conversation && <CallScreen conversation={conversation} handleEnd={handleEnd} />}
+        </DailyProvider>
+      </main>
     </ProtectedRoute>
   )
 }
 
-export default App
+export default VideoInterviewPage

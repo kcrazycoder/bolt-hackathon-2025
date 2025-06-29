@@ -4,6 +4,7 @@ import { LandingPage } from '@/components/LandingPage'
 import { AuthPage } from '@/components/AuthPage'
 import { SkillsPage } from '@/components/SkillsPage'
 import { AssessmentResultsPage } from '@/components/AssessmentResultsPage'
+import VideoInterviewPage from '@/components/VideoInterviewPage'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 
@@ -19,6 +20,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SkillsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/video-interview" 
+            element={
+              <ProtectedRoute>
+                <VideoInterviewPage />
               </ProtectedRoute>
             } 
           />

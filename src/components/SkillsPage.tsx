@@ -6,8 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
-import { runMockAssessment } from '@/lib/mockAssessmentApi'
-import { LogOut, Plus, X, ArrowRight, Brain } from 'lucide-react'
+import { LogOut, Plus, X, ArrowRight, Video } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export const SkillsPage = () => {
@@ -15,7 +14,6 @@ export const SkillsPage = () => {
   const [currentSkill, setCurrentSkill] = useState('')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [runningAssessment, setRunningAssessment] = useState(false)
   const { user, signOut } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -85,19 +83,19 @@ export const SkillsPage = () => {
     }
   }
 
-  const saveSkillsAndRunAssessment = async () => {
+  const saveSkillsAndStartInterview = async () => {
     if (!user || skills.length === 0) {
       toast({
         variant: "destructive",
         title: "No skills to assess",
-        description: "Please add at least one skill before starting the assessment.",
+        description: "Please add at least one skill before starting the video interview.",
       })
       return
     }
 
     setSaving(true)
     try {
-      // First, save skills to profile
+      // Save skills to profile
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -111,21 +109,14 @@ export const SkillsPage = () => {
 
       toast({
         title: "Skills saved successfully!",
-        description: "Starting your AI assessment...",
+        description: "Starting your video interview...",
       })
 
-      // Run the mock AI assessment
-      setRunningAssessment(true)
-      const assessmentResults = await runMockAssessment(skills)
-
-      // Navigate to results page with assessment data
-      navigate('/assessment-results', { 
-        state: { assessmentResults },
-        replace: true 
-      })
+      // Navigate to video interview page
+      navigate('/video-interview')
 
     } catch (error) {
-      console.error('Error saving skills or running assessment:', error)
+      console.error('Error saving skills:', error)
       toast({
         variant: "destructive",
         title: "Error occurred",
@@ -133,7 +124,6 @@ export const SkillsPage = () => {
       })
     } finally {
       setSaving(false)
-      setRunningAssessment(false)
     }
   }
 
@@ -221,23 +211,19 @@ export const SkillsPage = () => {
               </div>
             )}
 
-            {/* Assessment Button */}
+            {/* Video Interview Button */}
             <div className="pt-4">
               <Button
-                onClick={saveSkillsAndRunAssessment}
-                disabled={saving || runningAssessment || skills.length === 0}
+                onClick={saveSkillsAndStartInterview}
+                disabled={saving || skills.length === 0}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-purple-500/25 transition-all duration-300 group"
               >
-                {runningAssessment ? (
-                  <>
-                    <Brain className="mr-2 w-4 h-4 animate-pulse" />
-                    Running AI Assessment...
-                  </>
-                ) : saving ? (
+                {saving ? (
                   'Saving Skills...'
                 ) : (
                   <>
-                    Start AI Assessment
+                    <Video className="mr-2 w-4 h-4" />
+                    Start Video Interview
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -245,7 +231,7 @@ export const SkillsPage = () => {
               
               {skills.length === 0 && (
                 <p className="text-white/60 text-sm text-center mt-2">
-                  Add at least one skill to start assessment
+                  Add at least one skill to start video interview
                 </p>
               )}
             </div>
@@ -256,10 +242,11 @@ export const SkillsPage = () => {
         <Card className="mt-6 bg-white/5 backdrop-blur-sm border-white/10">
           <CardContent className="pt-6">
             <div className="text-center text-white/70 text-sm">
-              <p className="mb-2">🤖 AI-Powered Assessment</p>
+              <p className="mb-2">🎥 AI Video Interview</p>
               <p>
-                Our AI will analyze your skills and provide detailed feedback including strengths, 
-                areas for improvement, and personalized recommendations for your growth.
+                Join a live video conversation with our AI interviewer who will assess your skills 
+                through interactive questions and real-time feedback. Get personalized insights 
+                and recommendations for your professional growth.
               </p>
             </div>
           </CardContent>
