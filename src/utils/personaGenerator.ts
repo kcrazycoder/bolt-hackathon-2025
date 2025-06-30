@@ -208,7 +208,7 @@ export const generateQuestions = (skills: string[]): InterviewQuestion[] => {
   };
 
   // Generic question templates for unrecognized skills
-  const genericQuestionTemplates = [
+  const Tell me about your experience with Basketball and how you've applied it in practical situations. = [
     "Tell me about your experience with [SKILL] and how you've applied it in practical situations.",
     "Describe a challenging project or situation where you used your [SKILL] expertise. How did you approach it?",
     "What are the key principles or techniques in [SKILL] that you find most important, and can you give me an example of how you've used them?",
