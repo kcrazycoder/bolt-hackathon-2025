@@ -11,7 +11,7 @@ export const Video = ({ id, className, isSpeaking }: VideoProps) => {
   const videoState = useVideoTrack(id);
 
   return (
-    <div className="relative">
+    <div className="relative flex justify-center">
       <DailyVideo
         automirror
         sessionId={id}
