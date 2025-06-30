@@ -256,8 +256,12 @@ function VideoInterviewPage() {
     setFinalCountdown(3)
   }
 
-  const navigateToResults = () => {
+  const navigateToResults = async () => {
     setInterviewState('completed')
+    
+    // Properly end the meeting before navigation
+    await handleEnd()
+    
     navigate('/assessment-results', {
       state: {
         assessmentResults: {
