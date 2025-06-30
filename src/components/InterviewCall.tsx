@@ -10,12 +10,9 @@ interface InterviewCallProps {
   interviewState: InterviewState
   setInterviewState: (state: InterviewState) => void
   currentQuestionIndex: number
-  setCurrentQuestionIndex: (index: number) => void
   countdown: number
-  setCountdown: (countdown: number) => void
   finalCountdown: number
   questions: InterviewQuestion[]
-  onInterviewComplete: () => void
   onStartAssessmentConfirmation: () => void
 }
 
@@ -23,12 +20,9 @@ export const InterviewCall = ({
   interviewState,
   setInterviewState,
   currentQuestionIndex,
-  setCurrentQuestionIndex,
   countdown,
-  setCountdown,
   finalCountdown,
   questions,
-  onInterviewComplete,
   onStartAssessmentConfirmation
 }: InterviewCallProps) => {
   const remoteParticipantIds = useParticipantIds({ filter: 'remote' })
@@ -39,8 +33,8 @@ export const InterviewCall = ({
   const localAudio = useParticipantProperty(localSessionId, 'audio')
   const localAudioTrack = useParticipantProperty(localSessionId, 'audioTrack')
   
-  // For remote participant, use the first one if available, otherwise use null
-  const remoteParticipantId = remoteParticipantIds.length > 0 ? remoteParticipantIds[0] : null
+  // For remote participant, use the first one if available, otherwise use undefined
+  const remoteParticipantId = remoteParticipantIds[0]
   const remoteAudio = useParticipantProperty(remoteParticipantId, 'audio')
   const remoteAudioTrack = useParticipantProperty(remoteParticipantId, 'audioTrack')
 
