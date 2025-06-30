@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { DailyAudio, useParticipantIds, useLocalSessionId, useParticipantProperty } from '@daily-co/daily-react'
+import { DailyAudio, useParticipantIds, useLocalSessionId, useAudioTrack } from '@daily-co/daily-react'
 import { Minimize, Maximize } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Video } from '@/components/Video'
@@ -29,18 +29,14 @@ export const InterviewCall = ({
   const localSessionId = useLocalSessionId()
   const [mode, setMode] = useState<'full' | 'minimal'>('full')
 
-  // Always call hooks unconditionally - apply conditional logic to the results
-  const localAudio = useParticipantProperty(localSessionId, 'audio')
-  const localAudioTrack = useParticipantProperty(localSessionId, 'audioTrack')
-  
-  // For remote participant, use the first one if available, otherwise use undefined
+  // Use useAudioTrack to get proper DailyTrackState objects
+  const localAudioTrack = useAudioTrack(localSessionId)
   const remoteParticipantId = remoteParticipantIds[0]
-  const remoteAudio = useParticipantProperty(remoteParticipantId, 'audio')
-  const remoteAudioTrack = useParticipantProperty(remoteParticipantId, 'audioTrack')
+  const remoteAudioTrack = useAudioTrack(remoteParticipantId)
 
-  // Now apply conditional logic to the hook results with proper type checking
-  const localIsSpeaking = localAudio && localAudioTrack !== false && !localAudioTrack?.isOff
-  const remoteIsSpeaking = remoteParticipantId && remoteAudio && remoteAudioTrack !== false && !remoteAudioTrack?.isOff
+  // Now we can safely access isSpeaking property from DailyTrackState
+  const localIsSpeaking = localAudioTrack?.isSpeaking || false
+  const remoteIsSpeaking = remoteAudioTrack?.isSpeaking || false
 
   // Handle automatic transition from introduction to waiting for confirmation
   useEffect(() => {
