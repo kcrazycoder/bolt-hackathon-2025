@@ -87,10 +87,14 @@ function VideoInterviewPage() {
   useEffect(() => {
     return () => {
       if (conversation) {
-        void endConversation(conversation.conversation_id)
+        void endConversation(conversation.conversation_id).catch(error => {
+          console.warn('Failed to end conversation during cleanup:', error)
+        })
       }
       if (createdPersonaId) {
-        void deletePersona(createdPersonaId)
+        void deletePersona(createdPersonaId).catch(error => {
+          console.warn('Failed to delete persona during cleanup:', error)
+        })
       }
     }
   }, [conversation, createdPersonaId])
@@ -207,23 +211,35 @@ function VideoInterviewPage() {
   }
 
   const handleEnd = async () => {
+    // Reset state immediately to prevent race conditions
+    const currentConversation = conversation
+    const currentPersonaId = createdPersonaId
+    
+    setConversation(null)
+    setCreatedPersonaId(null)
+    setScreen('welcome')
+    setInterviewState('loading')
+    setCurrentQuestionIndex(0)
+    setCountdown(60)
+    setFinalCountdown(3)
+
+    // Attempt cleanup but don't throw errors
     try {
-      if (conversation) {
-        await endConversation(conversation.conversation_id)
-      }
-      if (createdPersonaId) {
-        await deletePersona(createdPersonaId)
+      if (currentConversation) {
+        await endConversation(currentConversation.conversation_id)
       }
     } catch (error) {
-      console.error('Error cleaning up:', error)
-    } finally {
-      setConversation(null)
-      setCreatedPersonaId(null)
-      setScreen('welcome')
-      setInterviewState('loading')
-      setCurrentQuestionIndex(0)
-      setCountdown(60)
-      setFinalCountdown(3)
+      console.warn('Failed to end conversation:', error)
+      // Don't throw - conversation might already be ended
+    }
+
+    try {
+      if (currentPersonaId) {
+        await deletePersona(currentPersonaId)
+      }
+    } catch (error) {
+      console.warn('Failed to delete persona:', error)
+      // Don't throw - persona might already be deleted
     }
   }
 
