@@ -23,6 +23,24 @@ export interface PersonaData {
       participant_interrupt_sensitivity?: string;
       smart_turn_detection?: boolean;
     };
+    perception?: {
+      perception_model?: string;
+      ambient_awareness_queries?: string[];
+      perception_analysis_queries?: string[];
+      perception_tool_prompt?: string;
+      perception_tools?: Array<{
+        type: string;
+        function: {
+          name: string;
+          description: string;
+          parameters: {
+            type: string;
+            properties: Record<string, any>;
+            required: string[];
+          };
+        };
+      }>;
+    };
   };
 }
 
