@@ -136,7 +136,6 @@ export const AuthPage = () => {
                 </Button>
               </TabsContent>
             </Tabs>
-            </div>
           </CardContent>
         </Card>
       </div>
