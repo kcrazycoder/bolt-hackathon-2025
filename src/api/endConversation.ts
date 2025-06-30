@@ -12,6 +12,12 @@ export const endConversation = async (conversationId: string) => {
       }
     );
 
+    // Handle cases where conversation is already ended or doesn't exist
+    if (response.status === 404 || response.status === 409) {
+      // Conversation already ended or doesn't exist - treat as success
+      return null;
+    }
+
     if (!response.ok) {
       throw new Error('Failed to end conversation');
     }
