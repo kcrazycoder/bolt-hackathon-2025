@@ -14,12 +14,9 @@ interface InterviewCallScreenProps {
   interviewState: InterviewState
   setInterviewState: (state: InterviewState) => void
   currentQuestionIndex: number
-  setCurrentQuestionIndex: (index: number) => void
   countdown: number
-  setCountdown: (countdown: number) => void
   finalCountdown: number
   questions: InterviewQuestion[]
-  onInterviewComplete: () => void
   onStartAssessmentConfirmation: () => void
 }
 
@@ -32,7 +29,6 @@ export const InterviewCallScreen = ({
   countdown,
   finalCountdown,
   questions,
-  onInterviewComplete,
   onStartAssessmentConfirmation
 }: InterviewCallScreenProps) => {
   const daily = useDaily()
