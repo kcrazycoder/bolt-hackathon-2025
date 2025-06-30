@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
-import { ArrowLeft, Github, Mail } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export const AuthPage = () => {
@@ -26,18 +26,6 @@ export const AuthPage = () => {
     if (!error && !isSignUp) {
       navigate('/skills')
     }
-    setLoading(false)
-  }
-
-  const handleGoogleAuth = async () => {
-    setLoading(true)
-    await signInWithGoogle()
-    setLoading(false)
-  }
-
-  const handleGithubAuth = async () => {
-    setLoading(true)
-    await signInWithGithub()
     setLoading(false)
   }
 
