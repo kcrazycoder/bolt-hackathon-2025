@@ -7,6 +7,7 @@ import { InterviewState, InterviewQuestion } from '@/utils/personaGenerator'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Clock, MessageCircle, CheckCircle, Timer } from 'lucide-react'
+import type { MockAssessmentResponse } from '@/lib/mockAssessmentApi'
 
 interface InterviewCallScreenProps {
   conversation: IConversation
@@ -18,6 +19,8 @@ interface InterviewCallScreenProps {
   finalCountdown: number
   questions: InterviewQuestion[]
   onStartAssessmentConfirmation: () => void
+  onIntroComplete: () => void
+  onAiFeedbackReceived: (feedback: MockAssessmentResponse) => void
 }
 
 export const InterviewCallScreen = ({
@@ -29,7 +32,9 @@ export const InterviewCallScreen = ({
   countdown,
   finalCountdown,
   questions,
-  onStartAssessmentConfirmation
+  onStartAssessmentConfirmation,
+  onIntroComplete,
+  onAiFeedbackReceived
 }: InterviewCallScreenProps) => {
   const daily = useDaily()
 
@@ -42,26 +47,57 @@ export const InterviewCallScreen = ({
     }
   }, [daily, conversation])
 
-  // Listen for perception tool calls (thumbs up detection)
+  // Listen for app messages from the AI
   useDailyEvent(
     'app-message',
     useCallback((event: any) => {
-      // Check if this is a perception tool call event
-      if (event?.data?.event_type === 'conversation.perception_tool_call') {
+      console.log('Received app-message:', event?.data)
+      
+      if (!event?.data) return
+
+      const { type } = event.data
+
+      // Handle AI introduction completion
+      if (type === 'intro_complete_waiting_for_confirmation') {
+        console.log('AI introduction complete, waiting for confirmation')
+        setInterviewState('waitingForConfirmation')
+        onIntroComplete()
+      }
+
+      // Handle AI starting first question
+      if (type === 'start_question' && event.data.question_index === 0) {
+        console.log('AI starting first question')
+        if (interviewState === 'waitingForConfirmation') {
+          onStartAssessmentConfirmation()
+        }
+      }
+
+      // Handle thumbs up gesture detection
+      if (event.data.event_type === 'conversation.perception_tool_call') {
         const { properties } = event.data
         
-        // Check if it's the thumbs up confirmation tool
         if (properties?.name === 'confirm_thumbs_up' && 
             properties?.arguments?.gesture_type === 'thumbs_up') {
           console.log('Thumbs up gesture detected:', properties.arguments)
           
-          // Trigger the confirmation if we're waiting for it
           if (interviewState === 'waitingForConfirmation') {
             onStartAssessmentConfirmation()
           }
         }
       }
-    }, [interviewState, onStartAssessmentConfirmation])
+
+      // Handle AI-generated feedback
+      if (type === 'final_assessment_results') {
+        console.log('Received AI feedback:', event.data.payload)
+        try {
+          const feedback = JSON.parse(event.data.payload) as MockAssessmentResponse
+          onAiFeedbackReceived(feedback)
+        } catch (error) {
+          console.error('Failed to parse AI feedback:', error)
+          // Continue with mock feedback if parsing fails
+        }
+      }
+    }, [interviewState, onStartAssessmentConfirmation, onIntroComplete, onAiFeedbackReceived, setInterviewState])
   )
 
   const handleLeave = async () => {

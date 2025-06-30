@@ -21,12 +21,14 @@ GREETING & INTRODUCTION:
 - IMMEDIATELY greet the user when they appear: "Hello! Welcome to your skills assessment. I'm your AI interviewer, and I'm excited to learn about your expertise in ${skillsText}."
 - Engage naturally: "I can see you've joined the call - how are you feeling about today's assessment?"
 - Explain the process conversationally: "We'll be covering ${skills.length} key areas of your expertise. For each topic, I'll ask you a thoughtful question, and you'll have about a minute to share your experience and insights."
+- AFTER completing your introduction, send this exact app message: { "type": "intro_complete_waiting_for_confirmation" }
 
 CONFIRMATION & TURN-TAKING:
 - Wait for explicit user acknowledgment before proceeding: "When you're ready to begin, just say 'yes', 'start', give me a thumbs up, or click the start button - I can see you on video!"
 - Provide clear signals when waiting: "I'm waiting for your confirmation to start..." 
 - Only advance after receiving explicit verbal confirmation, visual confirmation (thumbs up), or seeing the user click the interface button
 - Match your conversational pace to the UI's visual feedback system
+- When you start asking the FIRST question after confirmation, send this exact app message: { "type": "start_question", "question_index": 0 }
 
 QUESTION FLOW (Ask these specific questions in order):
 ${questionsText}
@@ -52,6 +54,7 @@ FEEDBACK DELIVERY PHASE:
 - Reference specific examples from their responses to support your assessment
 - Maintain encouraging and professional tone while being honest about areas for growth
 - Conclude with overall assessment and next steps for their professional development
+- AFTER delivering your complete feedback, send this exact app message with your assessment: { "type": "final_assessment_results", "payload": "{\"results\": [{\"skill\": \"SkillName\", \"score\": 85, \"feedback\": \"Detailed feedback text\", \"strengths\": [\"Strength 1\", \"Strength 2\"], \"improvements\": [\"Improvement 1\", \"Improvement 2\"]}], \"overallScore\": 85, \"summary\": \"Overall assessment summary\"}" }
 
 SYNCHRONIZATION WITH INTERFACE:
 - Be aware that the interface shows visual countdown timers and question progress
@@ -204,10 +207,29 @@ export const generateQuestions = (skills: string[]): InterviewQuestion[] => {
     ]
   };
 
+  // Generic question templates for unrecognized skills
+  const genericQuestionTemplates = [
+    "Tell me about your experience with [SKILL] and how you've applied it in practical situations.",
+    "Describe a challenging project or situation where you used your [SKILL] expertise. How did you approach it?",
+    "What are the key principles or techniques in [SKILL] that you find most important, and can you give me an example of how you've used them?",
+    "How do you stay current with developments in [SKILL], and what resources do you use to improve your skills?",
+    "Can you walk me through a specific example where your [SKILL] knowledge made a significant difference in achieving a goal?"
+  ];
+
   return skills.map(skill => {
     const skillKey = skill.toLowerCase().replace(/\s+/g, ' ');
-    const templates = questionTemplates[skillKey] || questionTemplates['design']; // fallback to design questions
-    const randomQuestion = templates[Math.floor(Math.random() * templates.length)];
+    const templates = questionTemplates[skillKey];
+    
+    let randomQuestion: string;
+    
+    if (templates) {
+      // Use specific questions for recognized skills
+      randomQuestion = templates[Math.floor(Math.random() * templates.length)];
+    } else {
+      // Use generic template for unrecognized skills
+      const genericTemplate = genericQuestionTemplates[Math.floor(Math.random() * genericQuestionTemplates.length)];
+      randomQuestion = genericTemplate.replace(/\[SKILL\]/g, skill);
+    }
     
     return {
       skill,
