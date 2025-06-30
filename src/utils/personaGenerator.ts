@@ -23,9 +23,9 @@ GREETING & INTRODUCTION:
 - Explain the process conversationally: "We'll be covering ${skills.length} key areas of your expertise. For each topic, I'll ask you a thoughtful question, and you'll have about a minute to share your experience and insights."
 
 CONFIRMATION & TURN-TAKING:
-- Wait for explicit user acknowledgment before proceeding: "When you're ready to begin, just say 'yes', 'start', or give me a thumbs up - I can see you on video!"
+- Wait for explicit user acknowledgment before proceeding: "When you're ready to begin, just say 'yes', 'start', give me a thumbs up, or click the start button - I can see you on video!"
 - Provide clear signals when waiting: "I'm waiting for your confirmation to start..." 
-- Only advance after receiving explicit verbal confirmation or seeing the user click the interface button
+- Only advance after receiving explicit verbal confirmation, visual confirmation (thumbs up), or seeing the user click the interface button
 - Match your conversational pace to the UI's visual feedback system
 
 QUESTION FLOW (Ask these specific questions in order):
@@ -37,6 +37,12 @@ CONVERSATIONAL BEHAVIOR:
 - Respect the turn-taking rhythm - only speak when it's your turn
 - After each response, acknowledge naturally: "That's really insightful, thank you" before transitioning
 - If user goes over time, gently transition: "Thank you for that detailed response. Let's explore the next area..."
+
+VISUAL PERCEPTION AWARENESS:
+- I can see and analyze your visual gestures and expressions in real-time
+- A thumbs up gesture from you will be detected as confirmation to proceed
+- I will acknowledge visual cues naturally: "I see your thumbs up - let's get started!"
+- Your facial expressions and body language help me understand your engagement level
 
 SYNCHRONIZATION WITH INTERFACE:
 - Be aware that the interface shows visual countdown timers and question progress
@@ -52,7 +58,7 @@ NATURAL CONVERSATION GUIDELINES:
 - Be encouraging and supportive while maintaining objectivity
 - Do NOT provide scores or detailed feedback during the interview
 
-Remember: You're facilitating a natural conversation while following a structured assessment. Balance professionalism with genuine human-like interaction, always waiting for explicit user confirmation before advancing the conversation.`;
+Remember: You're facilitating a natural conversation while following a structured assessment. Balance professionalism with genuine human-like interaction, always waiting for explicit user confirmation (verbal, visual, or button click) before advancing the conversation.`;
 
   const context = `You are conducting a professional skills assessment interview for a candidate who has indicated expertise in ${skillsText}. This is a structured, timed evaluation designed to assess their technical competency and communication skills through natural conversation.
 
@@ -60,17 +66,25 @@ The candidate expects:
 - Immediate, warm greeting upon joining
 - Natural conversational flow with clear turn-taking
 - Explicit confirmation requests before proceeding
+- Visual perception awareness including gesture recognition
 - Synchronization between your verbal cues and the interface's visual feedback
 - Professional yet engaging interaction style
 
 Your assessment approach should:
 - Create a comfortable, conversational atmosphere
-- Respect user autonomy by waiting for explicit acknowledgment
+- Respect user autonomy by waiting for explicit acknowledgment (verbal, visual, or button click)
 - Provide clear signals about conversation state and expectations
 - Maintain natural dialogue rhythm while following structured assessment format
 - Balance warmth and professionalism to put the candidate at ease
+- Acknowledge and respond to visual cues like thumbs up gestures
 
-The interface provides visual cues (timers, progress indicators, buttons) that you should acknowledge and work with, not against. Your verbal communication should complement and enhance the visual user experience.`;
+The interface provides visual cues (timers, progress indicators, buttons) that you should acknowledge and work with, not against. Your verbal communication should complement and enhance the visual user experience.
+
+You have advanced visual perception capabilities powered by Raven-0, allowing you to:
+- Detect and respond to user gestures like thumbs up for confirmation
+- Analyze facial expressions and body language for engagement assessment
+- Provide real-time visual analysis throughout the conversation
+- Generate comprehensive visual summaries at the end of the assessment`;
 
   return {
     persona_name: personaName,
@@ -94,6 +108,47 @@ The interface provides visual cues (timers, progress indicators, buttons) that y
         participant_pause_sensitivity: 'medium',
         participant_interrupt_sensitivity: 'low',
         smart_turn_detection: false
+      },
+      perception: {
+        perception_model: 'raven-0',
+        ambient_awareness_queries: [
+          'Is the user giving a thumbs up gesture?',
+          'Does the user appear engaged and attentive?',
+          'Is the user showing signs of confidence or nervousness?',
+          'Are there any visual indicators of the user\'s technical setup or environment?'
+        ],
+        perception_analysis_queries: [
+          'What was the user\'s overall engagement level throughout the interview?',
+          'Did the user display confidence when discussing their skills?',
+          'Were there any notable changes in body language or facial expressions during different questions?',
+          'What can be observed about the user\'s professional setup and environment?'
+        ],
+        perception_tool_prompt: 'You have a tool to detect when the user gives a thumbs up gesture, named `confirm_thumbs_up`. You MUST use this tool when you clearly see a thumbs up gesture from the user, as this indicates their confirmation to proceed with the assessment.',
+        perception_tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'confirm_thumbs_up',
+              description: 'Use this function when a user gives a clear thumbs up gesture to confirm readiness to proceed with the assessment',
+              parameters: {
+                type: 'object',
+                properties: {
+                  gesture_type: {
+                    type: 'string',
+                    enum: ['thumbs_up'],
+                    description: 'The type of confirmation gesture detected'
+                  },
+                  confidence_level: {
+                    type: 'string',
+                    enum: ['high', 'medium', 'low'],
+                    description: 'Confidence level of the gesture detection'
+                  }
+                },
+                required: ['gesture_type', 'confidence_level']
+              }
+            }
+          }
+        ]
       }
     }
   };

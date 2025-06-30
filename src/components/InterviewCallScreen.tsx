@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { useDaily } from '@daily-co/daily-react'
+import { useEffect, useCallback } from 'react'
+import { useDaily, useDailyEvent } from '@daily-co/daily-react'
 import { IConversation } from '@/types'
 import { CameraSettings } from '@/components/CameraSettings'
 import { InterviewCall } from '@/components/InterviewCall.tsx'
@@ -20,6 +20,7 @@ interface InterviewCallScreenProps {
   finalCountdown: number
   questions: InterviewQuestion[]
   onInterviewComplete: () => void
+  onStartAssessmentConfirmation: () => void
 }
 
 export const InterviewCallScreen = ({
@@ -33,7 +34,8 @@ export const InterviewCallScreen = ({
   setCountdown,
   finalCountdown,
   questions,
-  onInterviewComplete
+  onInterviewComplete,
+  onStartAssessmentConfirmation
 }: InterviewCallScreenProps) => {
   const daily = useDaily()
 
@@ -45,6 +47,28 @@ export const InterviewCallScreen = ({
       })
     }
   }, [daily, conversation])
+
+  // Listen for perception tool calls (thumbs up detection)
+  useDailyEvent(
+    'app-message',
+    useCallback((event: any) => {
+      // Check if this is a perception tool call event
+      if (event?.data?.event_type === 'conversation.perception_tool_call') {
+        const { properties } = event.data
+        
+        // Check if it's the thumbs up confirmation tool
+        if (properties?.name === 'confirm_thumbs_up' && 
+            properties?.arguments?.gesture_type === 'thumbs_up') {
+          console.log('Thumbs up gesture detected:', properties.arguments)
+          
+          // Trigger the confirmation if we're waiting for it
+          if (interviewState === 'waitingForConfirmation') {
+            onStartAssessmentConfirmation()
+          }
+        }
+      }
+    }, [interviewState, onStartAssessmentConfirmation])
+  )
 
   const handleLeave = async () => {
     await daily?.leave()
@@ -145,6 +169,7 @@ export const InterviewCallScreen = ({
             finalCountdown={finalCountdown}
             questions={questions}
             onInterviewComplete={onInterviewComplete}
+            onStartAssessmentConfirmation={onStartAssessmentConfirmation}
           />
         </div>
 

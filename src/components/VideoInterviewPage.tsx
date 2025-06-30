@@ -232,6 +232,15 @@ function VideoInterviewPage() {
     setInterviewState('introduction')
   }
 
+  // Centralized confirmation logic for both button clicks and visual gestures
+  const handleStartAssessmentConfirmation = () => {
+    if (interviewState === 'waitingForConfirmation') {
+      setInterviewState('question1')
+      setCountdown(60)
+      setCurrentQuestionIndex(0)
+    }
+  }
+
   const handleTimeUp = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
@@ -294,6 +303,7 @@ function VideoInterviewPage() {
           finalCountdown={finalCountdown}
           questions={questions}
           onInterviewComplete={handleInterviewComplete}
+          onStartAssessmentConfirmation={handleStartAssessmentConfirmation}
         />
       )}
     </main>

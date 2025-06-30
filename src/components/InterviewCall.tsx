@@ -16,6 +16,7 @@ interface InterviewCallProps {
   finalCountdown: number
   questions: InterviewQuestion[]
   onInterviewComplete: () => void
+  onStartAssessmentConfirmation: () => void
 }
 
 export const InterviewCall = ({
@@ -27,7 +28,8 @@ export const InterviewCall = ({
   setCountdown,
   finalCountdown,
   questions,
-  onInterviewComplete
+  onInterviewComplete,
+  onStartAssessmentConfirmation
 }: InterviewCallProps) => {
   const remoteParticipantIds = useParticipantIds({ filter: 'remote' })
   const localSessionId = useLocalSessionId()
@@ -46,10 +48,10 @@ export const InterviewCall = ({
   const localIsSpeaking = localAudio && !localAudioTrack?.isOff
   const remoteIsSpeaking = remoteParticipantId && remoteAudio && !remoteAudioTrack?.isOff
 
-  // Handle interview state transitions
+  // Handle automatic transition from introduction to waiting for confirmation
   useEffect(() => {
-    // Simulate persona introduction completion after 20 seconds
     if (interviewState === 'introduction') {
+      // Wait for AI to finish introduction (approximately 20 seconds)
       const timer = setTimeout(() => {
         setInterviewState('waitingForConfirmation')
       }, 20000)
@@ -57,13 +59,20 @@ export const InterviewCall = ({
     }
   }, [interviewState, setInterviewState])
 
-  // Handle confirmation and question transitions
-  const handleConfirmation = () => {
-    if (interviewState === 'waitingForConfirmation') {
-      setInterviewState('question1')
-      setCountdown(60)
+  // Dynamic transition based on AI speech patterns
+  useEffect(() => {
+    // When AI starts speaking during waitingForConfirmation, it likely means
+    // the user has given verbal confirmation and AI is asking the first question
+    if (interviewState === 'waitingForConfirmation' && remoteIsSpeaking) {
+      // Small delay to ensure this is the start of the first question, not just acknowledgment
+      const timer = setTimeout(() => {
+        if (interviewState === 'waitingForConfirmation') {
+          onStartAssessmentConfirmation()
+        }
+      }, 2000)
+      return () => clearTimeout(timer)
     }
-  }
+  }, [interviewState, remoteIsSpeaking, onStartAssessmentConfirmation])
 
   const handleToggleMode = () => {
     setMode(prev => prev === 'full' ? 'minimal' : 'full')
@@ -131,10 +140,10 @@ export const InterviewCall = ({
               {interviewState === 'waitingForConfirmation' && (
                 <div className="text-sm space-y-2">
                   <div className="font-medium">✋ Confirmation Required</div>
-                  <div className="text-white/70">Say "yes" or "start" to begin the assessment</div>
+                  <div className="text-white/70">Say "yes", "start", give a thumbs up, or click the button</div>
                   <Button 
                     size="sm" 
-                    onClick={handleConfirmation}
+                    onClick={onStartAssessmentConfirmation}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     Start Assessment
