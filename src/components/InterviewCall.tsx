@@ -38,9 +38,9 @@ export const InterviewCall = ({
   const remoteAudio = useParticipantProperty(remoteParticipantId, 'audio')
   const remoteAudioTrack = useParticipantProperty(remoteParticipantId, 'audioTrack')
 
-  // Now apply conditional logic to the hook results
-  const localIsSpeaking = localAudio && !localAudioTrack?.isOff
-  const remoteIsSpeaking = remoteParticipantId && remoteAudio && !remoteAudioTrack?.isOff
+  // Now apply conditional logic to the hook results with proper type checking
+  const localIsSpeaking = localAudio && localAudioTrack !== false && !localAudioTrack?.isOff
+  const remoteIsSpeaking = remoteParticipantId && remoteAudio && remoteAudioTrack !== false && !remoteAudioTrack?.isOff
 
   // Handle automatic transition from introduction to waiting for confirmation
   useEffect(() => {
