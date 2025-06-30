@@ -35,12 +35,11 @@ export const LandingPage = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Master Your
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent"> Skills</span>
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">Skaill</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Get personalized feedback on your expertise through AI-powered video conversations. 
+            Scale your skills with AI through personalized video conversations. 
             Discover your strengths and unlock your potential.
           </p>
         </div>
