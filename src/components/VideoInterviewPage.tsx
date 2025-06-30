@@ -301,12 +301,9 @@ function VideoInterviewPage() {
           interviewState={interviewState}
           setInterviewState={setInterviewState}
           currentQuestionIndex={currentQuestionIndex}
-          setCurrentQuestionIndex={setCurrentQuestionIndex}
           countdown={countdown}
-          setCountdown={setCountdown}
           finalCountdown={finalCountdown}
           questions={questions}
-          onInterviewComplete={handleInterviewComplete}
           onStartAssessmentConfirmation={handleStartAssessmentConfirmation}
         />
       )}
