@@ -29,14 +29,14 @@ export const InterviewCall = ({
   const localSessionId = useLocalSessionId()
   const [mode, setMode] = useState<'full' | 'minimal'>('full')
 
-  // Use useAudioTrack to get proper DailyTrackState objects
+  // Use useAudioTrack to get MediaTrackState objects
   const localAudioTrack = useAudioTrack(localSessionId)
   const remoteParticipantId = remoteParticipantIds[0]
   const remoteAudioTrack = useAudioTrack(remoteParticipantId)
 
-  // Now we can safely access isSpeaking property from DailyTrackState
-  const localIsSpeaking = localAudioTrack?.isSpeaking || false
-  const remoteIsSpeaking = remoteAudioTrack?.isSpeaking || false
+  // Check if audio is enabled and not off to determine speaking state
+  const localIsSpeaking = localAudioTrack && !localAudioTrack.isOff && localAudioTrack.state === 'playable'
+  const remoteIsSpeaking = remoteAudioTrack && !remoteAudioTrack.isOff && remoteAudioTrack.state === 'playable'
 
   // Handle automatic transition from introduction to waiting for confirmation
   useEffect(() => {
