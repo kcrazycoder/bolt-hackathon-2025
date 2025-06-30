@@ -136,38 +136,6 @@ export const AuthPage = () => {
                 </Button>
               </TabsContent>
             </Tabs>
-
-            <div className="mt-6">
-              <Separator className="bg-white/20" />
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-white/20" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-transparent px-2 text-white/70">Or continue with</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <Button
-                variant="outline"
-                onClick={handleGoogleAuth}
-                disabled={loading}
-                className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleGithubAuth}
-                disabled={loading}
-                className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                <Github className="w-4 h-4 mr-2" />
-                GitHub
-              </Button>
             </div>
           </CardContent>
         </Card>
